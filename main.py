@@ -2,12 +2,8 @@
 import streamlit as st
 import importlib
 
-
 st.title('Dart Uni Dashboard')
 st.header('Click a page to learn more')
-
-st.button(label='Piazza Activity')
-st.button(label='Student Wellbeing')
 
 # Dictionary of pages
 pages = {
