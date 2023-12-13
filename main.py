@@ -6,6 +6,29 @@ import pandas as pd
 import glob
 import os
 import matplotlib.pyplot as plt
+import importlib
+
+
+st.title('Dart Uni Dashboard')
+st.header('Click a page to learn more')
+
+
+st.button(label='Piazza Activity')
+st.button(label='Student Wellbeing')
+
+# Dictionary of pages
+pages = {
+    "Q1 Learn more about the Piazza Activity": "piazza",
+    "Q2 How are the students doing?": "wellbeing",
+        }
+
+# Sidebar selection
+page = st.sidebar.selectbox("Select the question you want answers for:", options=list(pages.keys()))
+
+# Import the selected page module and call its show function
+if page:
+    page_module = importlib.import_module(pages[page])
+    page_module.show()
 
 # Reading Data files: dinning
 path = r'data/dinning'
