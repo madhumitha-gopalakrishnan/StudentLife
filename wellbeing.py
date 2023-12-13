@@ -5,6 +5,7 @@ import pandas as pd
 import glob
 import os
 
+
 def show():
     # Reading Data files: education, class
     classList = pd.read_csv("data/education/class.csv", header=None, engine='python', usecols=lambda xy: xy in range(5))
@@ -126,6 +127,21 @@ def show():
     Mood2EMA = pd.concat(li, axis=0, ignore_index=True)
     Mood2EMA['uid'] = Mood2EMA['uid'].str.replace('Mood 2_', '')
 
+    # Reading Data files: EMA, response, Stress
+    path = r'data/EMA/response/Stress'
+    pattern = os.path.join(path, "*.json")
+    all_files = glob.glob(pattern)
+    li = []
+
+    for filename in all_files:
+        df = pd.read_json(filename)
+        # Extract the base name of the file without the path and extension to add as a new column
+        df['uid'] = os.path.basename(filename).split('.')[0]
+        li.append(df)
+
+    StressEMA = pd.concat(li, axis=0, ignore_index=True)
+    StressEMA['uid'] = StressEMA['uid'].str.replace('Stress_', '')
+
     # Student Well-being Page
     st.title("Student Well-being")
 
@@ -246,4 +262,52 @@ def show():
 
     st.plotly_chart(fig)
 
-    st.dataframe(BehaviorEMA)
+    st.header('Anxiety Level Trend of Students')
+    # Unique list of students
+    BehaviorEMA['resp_time'] = pd.to_datetime(BehaviorEMA['resp_time'], unit='s')
+
+    # Sort the DataFrame by 'resp_time'
+    BehaviorEMA = BehaviorEMA.sort_values(by='resp_time')
+
+    # Find the start date (first entry in the sorted DataFrame)
+    start_date = BehaviorEMA['resp_time'].iloc[0]
+
+    # Calculate the number of weeks since the start date for each entry
+    BehaviorEMA['week'] = (BehaviorEMA['resp_time'] - start_date).dt.days // 7 + 1
+
+    students = BehaviorEMA['uid'].unique()
+
+    # Dropdown to select a student
+    selected_student = st.selectbox('Select a Student', students)
+
+    # Filter the data for the selected student
+    student_data = BehaviorEMA[BehaviorEMA['uid'] == selected_student]
+
+    # Plotting
+    st.line_chart(student_data, x='resp_time', y='anxious')
+
+    st.header('Stress Level Trend of Students')
+    # Unique list of students
+    student = StressEMA['uid'].unique()
+
+    # Dropdown to select a student
+    selected_student = st.selectbox('Select Student', student)
+
+    # Filter the data for the selected student
+    student_data = StressEMA[StressEMA['uid'] == selected_student]
+
+    # Plotting
+    st.line_chart(student_data, x='resp_time', y='level')
+
+    st.header('Sleep Trend of Students')
+    # Unique list of students
+    student = SleepEMA['uid'].unique()
+
+    # Dropdown to select a student
+    selected_student = st.selectbox('Select the Student', student)
+
+    # Filter the data for the selected student
+    student_data = SleepEMA[SleepEMA['uid'] == selected_student]
+
+    # Plotting
+    st.line_chart(student_data, x='resp_time', y='hour')
