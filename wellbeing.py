@@ -1,11 +1,9 @@
 # Importing all the required libraries
 import streamlit as st
 import plotly_express as px
-import numpy as np
 import pandas as pd
 import glob
 import os
-import matplotlib.pyplot as plt
 
 # Reading Data files: education, class
 classList = pd.read_csv("data/education/class.csv", header=None, engine='python', usecols=lambda xy: xy in range(5))
