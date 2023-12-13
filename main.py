@@ -375,25 +375,13 @@ fig.update_layout(
 
 st.plotly_chart(fig)
 
+Mood2EMA['how'] = Mood2EMA['how'].map({1: 'Happy', 2: 'Stressed', 3: 'Tired'})
 st.dataframe(Mood2EMA)
 
-# Define mood labels
-mood_labels = ['Happy', 'Stressed', 'Tired']
-
-# Create a spider plot
-fig = px.line_polar(Mood2EMA, r='week', theta=mood_labels, line_close=True,
-                    labels={'1': 'Week 1', '2': 'Week 2', '3': 'Week 3', '4': 'Week 4'},
-                    color_discrete_sequence=['red', 'blue', 'green'],
-                    category_orders={'theta': mood_labels})
-
-# Customize the spider plot layout
-fig.update_layout(
-    polar=dict(radialaxis=dict(visible=True)),
-    showlegend=True,
-    legend_title_text='Users',
-    polar_angularaxis_rotation=90,
-    title='Mood Spider Plot',
-)
+Mood2EMA = Mood2EMA(dict(
+    r=[1, 2, 3, 4, 5, 6, 7],
+    theta = ['Happy','Stressed','Tired']))
+fig = px.line_polar(df, r='r', theta='theta', line_close=True)
 
 # Display the spider plot using Streamlit
 st.plotly_chart(fig)
