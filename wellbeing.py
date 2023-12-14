@@ -264,17 +264,6 @@ def show():
 
     st.header('Anxiety Level Trend of Students')
     # Unique list of students
-    BehaviorEMA['resp_time'] = pd.to_datetime(BehaviorEMA['resp_time'], unit='s')
-
-    # Sort the DataFrame by 'resp_time'
-    BehaviorEMA = BehaviorEMA.sort_values(by='resp_time')
-
-    # Find the start date (first entry in the sorted DataFrame)
-    start_date = BehaviorEMA['resp_time'].iloc[0]
-
-    # Calculate the number of weeks since the start date for each entry
-    BehaviorEMA['week'] = (BehaviorEMA['resp_time'] - start_date).dt.days // 7 + 1
-
     students = BehaviorEMA['uid'].unique()
 
     # Dropdown to select a student

@@ -1,6 +1,7 @@
 # Importing all the required libraries
 import streamlit as st
 import importlib
+import plotly_express as px
 
 st.title('Dart Uni Dashboard')
 st.write("This dashboard will give you a comprehensive view of what is happening in your class. You can view student's activities on Piazza and their wellbeing to prvoide the necessary interventions if and when required.")
