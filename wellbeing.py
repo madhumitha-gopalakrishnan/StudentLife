@@ -39,18 +39,11 @@ def show():
     # Reading Data files: education, grades
     grades = pd.read_csv("data/education/grades.csv")
 
-    # Reading Data files: education, piazza
-    piazza = pd.read_csv("data/education/piazza.csv")
-
     # Reading Data files: Survey, Loneliness Scale
     lonelinessSurvey = pd.read_csv("data/survey/LonelinessScale.csv")
 
     # Reading Data files: Survey, Perceived Stress Scale
     perceivedStressSurvey = pd.read_csv("data/survey/PerceivedStressScale.csv")
-
-    # Reading Data files: EMA, EMA definition
-    emaDefinition = pd.read_json("data/EMA/EMA_definition.json")
-    emaDefinition = emaDefinition.explode('questions')
 
     # Reading Data files: EMA, response, Activity
     path = r'data/EMA/response/Activity'
@@ -184,7 +177,8 @@ def show():
                        .rename(columns={'hour': 'Average Hours of Sleep'}))
 
     # Calculating Workload
-    WorkloadEMA = ClassEMA.groupby('uid')['hours'].mean().reset_index().rename(columns={'hours': 'Average Workload Hours'})
+    WorkloadEMA = (ClassEMA.groupby('uid')['hours'].mean()
+                   .reset_index().rename(columns={'hours': 'Average Workload Hours'}))
 
     # Calculating Perceived Stress
     # Scoring system
@@ -262,7 +256,13 @@ def show():
 
     st.plotly_chart(fig)
 
-    st.header('Anxiety Level Trend of Students')
+    st.header('Student Well-being Trends')
+
+    # Convert 'resp_time' from Unix timestamp to readable date for all EMA DataFrames
+    BehaviorEMA['resp_time'] = pd.to_datetime(BehaviorEMA['resp_time'], unit='s')
+    StressEMA['resp_time'] = pd.to_datetime(StressEMA['resp_time'], unit='s')
+    SleepEMA['resp_time'] = pd.to_datetime(SleepEMA['resp_time'], unit='s')
+
     # Unique list of students
     students = BehaviorEMA['uid'].unique()
 
@@ -300,3 +300,51 @@ def show():
 
     # Plotting
     st.line_chart(student_data, x='resp_time', y='hour')
+
+    # Header for selecting a student and plotting data
+    st.header('Student Stress and Deadlines Trends')
+
+    # Convert 'resp_time' and 'Date' from Unix timestamp to readable date
+    StressEMA['resp_time'] = pd.to_datetime(StressEMA['resp_time'], unit='s').dt.date
+    deadlines['Date'] = pd.to_datetime(deadlines['Date']).dt.date
+
+    # Merging StressEMA data with deadlines
+    StressDeadlines = pd.merge(StressEMA[['uid', 'resp_time', 'level']],
+                           deadlines[['uid', 'Date', 'No. of Deadlines']],
+                           left_on=['uid', 'resp_time'],
+                           right_on=['uid', 'Date'],
+                           how='outer')
+
+    # Drop rows where both 'resp_time' and 'Date' are NA
+    StressDeadlines = StressDeadlines.dropna(subset=['resp_time', 'Date'], how='all')
+
+    # Fill missing values in 'Date' with values from 'resp_time'
+    StressDeadlines['Date'] = StressDeadlines['Date'].fillna(StressDeadlines['resp_time'])
+    StressDeadlines.drop('resp_time', axis=1, inplace=True)
+
+    # Drop rows where both 'level' and 'No. of Deadlines' are NA
+    StressDeadlines = StressDeadlines.dropna(subset=['level', 'No. of Deadlines'], how='all')
+
+    # Fill NA values in 'No. of Deadlines' with 0
+    StressDeadlines['No. of Deadlines'] = StressDeadlines['No. of Deadlines'].fillna(0)
+
+    st.dataframe(StressDeadlines)
+
+    # Unique list of students
+    students = StressDeadlines['uid'].unique()
+
+    # Dropdown to select a student
+    selected_student = st.selectbox('Select a Student', students)
+
+    # Filter the data for the selected student
+    student_data = StressDeadlines[StressDeadlines['uid'] == selected_student]
+
+    # Plotting stress and deadlines on a single chart
+    fig = px.line(student_data, x='Date', y='level')
+    fig.add_scatter(x=student_data['Date'], y=student_data['level'], mode='lines', name='Stress Level')
+    fig.add_scatter(x=student_data['Date'], y=student_data['No. of Deadlines'], mode='lines', name='Number of Deadlines')
+
+    fig.update_layout(title='Stress Level and Number of Deadlines Over Time',
+                      xaxis_title='Time',
+                      yaxis_title='Value')
+    st.plotly_chart(fig)

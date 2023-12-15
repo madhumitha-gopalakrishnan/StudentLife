@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 def show():
     # Reading Data files: education, grades
     grades = pd.read_csv("data/education/grades.csv")
@@ -117,7 +118,8 @@ def show():
     st.header("How does activity on Piazza affect student performance?")
 
     # Dropdown to select the variable for correlation
-    selected_variable = st.selectbox("Select a Variable", ['views', 'contributions', 'days online', 'questions', 'answers'])
+    selected_variable = st.selectbox("Select a Variable", ['views', 'contributions',
+                                                           'days online', 'questions', 'answers'])
 
     # Scatter plot to visualize the correlation
     fig = px.scatter(gradePiazza, x=selected_variable, y=' gpa all',
