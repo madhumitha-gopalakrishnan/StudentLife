@@ -1,6 +1,6 @@
 # Importing all the required libraries
 import streamlit as st
-import plotly_express as px
+import plotly.express as px
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

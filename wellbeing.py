@@ -1,6 +1,6 @@
 # Importing all the required libraries
 import streamlit as st
-import plotly_express as px
+import plotly.express as px
 import pandas as pd
 import glob
 import os
@@ -328,6 +328,10 @@ def show():
     # Fill NA values in 'No. of Deadlines' with 0
     StressDeadlines['No. of Deadlines'] = StressDeadlines['No. of Deadlines'].fillna(0)
 
+    Stress = StressDeadlines.dropna(subset=['level'])
+
+    StressDeadlines = StressDeadlines.sort_values(by='Date')
+
     st.dataframe(StressDeadlines)
 
     # Unique list of students
@@ -336,12 +340,15 @@ def show():
     # Dropdown to select a student
     selected_student = st.selectbox('Select a Student', students)
 
+
     # Filter the data for the selected student
     student_data = StressDeadlines[StressDeadlines['uid'] == selected_student]
+    stressStudent = Stress[Stress['uid'] == selected_student]
 
     # Plotting stress and deadlines on a single chart
-    fig = px.line(student_data, x='Date', y='level')
-    fig.add_scatter(x=student_data['Date'], y=student_data['level'], mode='lines', name='Stress Level')
+    #fig = px.line(student_data, x='Date', y='level')
+    fig = px.line(x=stressStudent['Date'], y=stressStudent['level'])
+    fig.add_scatter(x=stressStudent['Date'], y=stressStudent['level'], mode='lines', name='Stress Level')
     fig.add_scatter(x=student_data['Date'], y=student_data['No. of Deadlines'], mode='lines', name='Number of Deadlines')
 
     fig.update_layout(title='Stress Level and Number of Deadlines Over Time',
